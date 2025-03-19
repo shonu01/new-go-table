@@ -61,8 +61,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'templates'),
-            os.path.join(BASE_DIR, 'myapp/templates'),
+            BASE_DIR / 'templates',
+            BASE_DIR / 'myapp' / 'templates',
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -174,15 +174,15 @@ CORS_ALLOW_CREDENTIALS = True
 # Custom User Model
 AUTH_USER_MODEL = 'myapp.CustomUser'
 
-# Authentication settings
+# Authentication Settings
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'logout'
+LOGIN_REDIRECT_URL = 'user_dashboard'
+LOGOUT_REDIRECT_URL = 'home'
 
-# Email settings for password reset
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
-EMAIL_HOST = 'smtp.gmail.com'  # Update with your email host
+# Email Settings for Password Reset
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'your-email@gmail.com'  # Update with your email
-EMAIL_HOST_PASSWORD = 'your-app-password'  # Update with your app password
+EMAIL_HOST_USER = 'your-email@gmail.com'  # Replace with your email
+EMAIL_HOST_PASSWORD = 'your-app-password'  # Replace with your app password

@@ -1,0 +1,172 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - GoTable{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Restaurants</h5>
+                    <h2 class="card-text">{{ total_restaurants }}</h2>
+                    <a href="{% url 'admin_restaurant_list' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-utensils me-2"></i>Manage Restaurants
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Tables</h5>
+                    <h2 class="card-text">{{ total_tables }}</h2>
+                    <a href="{% url 'table_list' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-chair me-2"></i>Manage Tables
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Bookings</h5>
+                    <h2 class="card-text">{{ total_bookings }}</h2>
+                    <a href="{% url 'admin_booking_list' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-calendar-check me-2"></i>Manage Bookings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Pending</h6>
+                    <h3 class="card-text text-warning">{{ booking_stats.pending }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Confirmed</h6>
+                    <h3 class="card-text text-success">{{ booking_stats.confirmed }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Cancelled</h6>
+                    <h3 class="card-text text-danger">{{ booking_stats.cancelled }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Completed</h6>
+                    <h3 class="card-text text-info">{{ booking_stats.completed }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Bookings -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Bookings</h5>
+                    <a href="{% url 'admin_booking_list' %}" class="btn btn-primary btn-sm">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Restaurant</th>
+                                    <th>User</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Guests</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in recent_bookings %}
+                                <tr>
+                                    <td>{{ booking.table.restaurant.name }}</td>
+                                    <td>{{ booking.user.username }}</td>
+                                    <td>{{ booking.date }}</td>
+                                    <td>{{ booking.time }}</td>
+                                    <td>{{ booking.number_of_guests }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ booking.status }}">
+                                            {{ booking.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'booking_edit' booking.pk %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'booking_delete' booking.pk %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No recent bookings.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <a href="{% url 'restaurant_create' %}" class="btn btn-primary w-100">
+                                <i class="fas fa-plus me-2"></i>Add New Restaurant
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'table_create' %}" class="btn btn-success w-100">
+                                <i class="fas fa-chair me-2"></i>Add New Table
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'admin_restaurant_list' %}" class="btn btn-info w-100">
+                                <i class="fas fa-list me-2"></i>View All Restaurants
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

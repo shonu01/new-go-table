@@ -1,0 +1,203 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}My Dashboard - GoTable{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>Welcome, {{ user.username }}!</h1>
+            <p class="text-muted">Manage your bookings and discover new restaurants.</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Find a Restaurant</h5>
+                    <p class="card-text">Browse available restaurants and make a reservation.</p>
+                    <a href="{% url 'restaurant_list' %}" class="btn btn-light">
+                        <i class="fas fa-utensils me-2"></i>Browse Restaurants
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">My Bookings</h5>
+                    <p class="card-text">View and manage your upcoming reservations.</p>
+                    <a href="#upcoming-bookings" class="btn btn-light">
+                        <i class="fas fa-calendar-check me-2"></i>View Bookings
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Profile Settings</h5>
+                    <p class="card-text">Update your profile and preferences.</p>
+                    <a href="{% url 'profile' %}" class="btn btn-light">
+                        <i class="fas fa-user-cog me-2"></i>Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Bookings -->
+    <div class="row mb-4" id="upcoming-bookings">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Upcoming Bookings</h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_bookings %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Restaurant</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Guests</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in upcoming_bookings %}
+                                <tr>
+                                    <td>{{ booking.table.restaurant.name }}</td>
+                                    <td>{{ booking.date }}</td>
+                                    <td>{{ booking.time }}</td>
+                                    <td>{{ booking.number_of_guests }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ booking.status }}">
+                                            {{ booking.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'booking_detail' booking.pk %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if booking.status == 'pending' %}
+                                            <a href="{% url 'cancel_booking' booking.pk %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-times"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No upcoming bookings.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Past Bookings -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Past Bookings</h5>
+                </div>
+                <div class="card-body">
+                    {% if past_bookings %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Restaurant</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Guests</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in past_bookings %}
+                                <tr>
+                                    <td>{{ booking.table.restaurant.name }}</td>
+                                    <td>{{ booking.date }}</td>
+                                    <td>{{ booking.time }}</td>
+                                    <td>{{ booking.number_of_guests }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ booking.status }}">
+                                            {{ booking.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'booking_detail' booking.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No past bookings.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommended Restaurants -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recommended Restaurants</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for restaurant in recommended_restaurants %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                {% if restaurant.image %}
+                                <img src="{{ restaurant.image.url }}" class="card-img-top" alt="{{ restaurant.name }}">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ restaurant.name }}</h5>
+                                    <p class="card-text">{{ restaurant.description|truncatewords:20 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary">{{ restaurant.cuisine_type }}</span>
+                                        <span class="text-muted">{{ restaurant.price_range }}</span>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <a href="{% url 'restaurant_detail' restaurant.pk %}" class="btn btn-primary w-100">
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <p class="text-muted text-center">No recommended restaurants available.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

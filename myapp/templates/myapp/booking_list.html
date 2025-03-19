@@ -1,120 +1,138 @@
 {% extends 'myapp/base.html' %}
 {% load static %}
 
-{% block title %}My Bookings - GoTable{% endblock %}
+{% block title %}Booking Management - GoTable{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <h1 class="mb-4">My Bookings</h1>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Booking Management</h1>
+    </div>
 
-            <!-- Booking Filters -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-4">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="">All Statuses</option>
-                                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
-                                <option value="confirmed" {% if request.GET.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
-                                <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
-                                <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="date" class="form-label">Date</label>
-                            <input type="date" class="form-control" id="date" name="date" value="{{ request.GET.date }}">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">&nbsp;</label>
-                            <button type="submit" class="btn btn-primary w-100">Filter</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-            <!-- Bookings List -->
-            {% for booking in bookings %}
-            <div class="card mb-3">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-2">
-                            {% if booking.table.restaurant.image %}
-                            <img src="{{ booking.table.restaurant.image.url }}" class="img-fluid rounded" alt="{{ booking.table.restaurant.name }}">
-                            {% else %}
-                            <img src="{% static 'images/default-restaurant.jpg' %}" class="img-fluid rounded" alt="{{ booking.table.restaurant.name }}">
-                            {% endif %}
-                        </div>
-                        <div class="col-md-7">
-                            <h5 class="card-title mb-1">{{ booking.table.restaurant.name }}</h5>
-                            <p class="text-muted mb-1">
-                                <i class="fas fa-calendar me-2"></i>{{ booking.date|date:"F j, Y" }}
-                                <i class="fas fa-clock ms-3 me-2"></i>{{ booking.time|time:"g:i A" }}
-                            </p>
-                            <p class="text-muted mb-1">
-                                <i class="fas fa-users me-2"></i>{{ booking.number_of_guests }} Guest{{ booking.number_of_guests|pluralize }}
-                                <i class="fas fa-table ms-3 me-2"></i>Table {{ booking.table.table_number }}
-                            </p>
-                            <span class="status-tag status-{{ booking.status }}">
-                                {{ booking.status|title }}
-                            </span>
-                        </div>
-                        <div class="col-md-3 text-md-end mt-3 mt-md-0">
-                            <a href="{% url 'booking_detail' booking.id %}" class="btn btn-outline-primary btn-sm mb-2 w-100">
-                                View Details
-                            </a>
-                            {% if booking.status == 'pending' or booking.status == 'confirmed' %}
-                            <form method="post" action="{% url 'cancel_booking' booking.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Are you sure you want to cancel this booking?')">
-                                    Cancel Booking
-                                </button>
-                            </form>
-                            {% endif %}
-                        </div>
-                    </div>
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="confirmed" {% if selected_status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                        <option value="cancelled" {% if selected_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                        <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label">Restaurant</label>
+                    <select name="restaurant" class="form-select">
+                        <option value="">All Restaurants</option>
+                        {% for restaurant in restaurants %}
+                        <option value="{{ restaurant.id }}" {% if selected_restaurant == restaurant.id %}selected{% endif %}>
+                            {{ restaurant.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="date" class="form-control" value="{{ selected_date }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-2"></i>Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bookings Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Restaurant</th>
+                            <th>Table</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Guests</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td>{{ booking.user.username }}</td>
+                            <td>{{ booking.table.restaurant.name }}</td>
+                            <td>Table #{{ booking.table.number }}</td>
+                            <td>{{ booking.date }}</td>
+                            <td>{{ booking.time }}</td>
+                            <td>{{ booking.number_of_guests }}</td>
+                            <td>
+                                <span class="badge bg-{{ booking.status }}">
+                                    {{ booking.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'booking_edit' booking.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'booking_delete' booking.pk %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No bookings found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            {% empty %}
-            <div class="text-center py-5">
-                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                <h3>No Bookings Found</h3>
-                {% if request.GET %}
-                <p>No bookings match your filter criteria.</p>
-                <a href="{% url 'booking_list' %}" class="btn btn-primary">View All Bookings</a>
-                {% else %}
-                <p>You haven't made any bookings yet.</p>
-                <a href="{% url 'restaurant_list' %}" class="btn btn-primary">Browse Restaurants</a>
-                {% endif %}
-            </div>
-            {% endfor %}
 
             <!-- Pagination -->
             {% if bookings.has_other_pages %}
-            <nav class="mt-4" aria-label="Booking pagination">
+            <nav aria-label="Page navigation" class="mt-4">
                 <ul class="pagination justify-content-center">
                     {% if bookings.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ bookings.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
+                        <a class="page-link" href="?page={{ bookings.previous_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_restaurant %}&restaurant={{ selected_restaurant }}{% endif %}{% if selected_date %}&date={{ selected_date }}{% endif %}">
+                            <i class="fas fa-chevron-left"></i>
                         </a>
                     </li>
                     {% endif %}
-
+                    
                     {% for num in bookings.paginator.page_range %}
                     <li class="page-item {% if bookings.number == num %}active{% endif %}">
-                        <a class="page-link" href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_restaurant %}&restaurant={{ selected_restaurant }}{% endif %}{% if selected_date %}&date={{ selected_date }}{% endif %}">
                             {{ num }}
                         </a>
                     </li>
                     {% endfor %}
-
+                    
                     {% if bookings.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ bookings.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
+                        <a class="page-link" href="?page={{ bookings.next_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_restaurant %}&restaurant={{ selected_restaurant }}{% endif %}{% if selected_date %}&date={{ selected_date }}{% endif %}">
+                            <i class="fas fa-chevron-right"></i>
                         </a>
                     </li>
                     {% endif %}

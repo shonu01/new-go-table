@@ -1,0 +1,104 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - GoTable{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">{{ title }}</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <h5>Please correct the errors below:</h5>
+                            <ul>
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ field|title }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <div class="row g-3">
+                            <!-- Basic Information -->
+                            <div class="col-md-6">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
+                                {{ form.name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.cuisine_type.id_for_label }}" class="form-label">Cuisine Type</label>
+                                {{ form.cuisine_type }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.price_range.id_for_label }}" class="form-label">Price Range</label>
+                                {{ form.price_range }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.max_capacity.id_for_label }}" class="form-label">Maximum Capacity</label>
+                                {{ form.max_capacity }}
+                            </div>
+
+                            <!-- Contact Information -->
+                            <div class="col-md-6">
+                                <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
+                                {{ form.phone_number }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                                {{ form.email }}
+                            </div>
+                            <div class="col-12">
+                                <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                                {{ form.address }}
+                            </div>
+
+                            <!-- Business Hours -->
+                            <div class="col-md-6">
+                                <label for="{{ form.opening_time.id_for_label }}" class="form-label">Opening Time</label>
+                                {{ form.opening_time }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.closing_time.id_for_label }}" class="form-label">Closing Time</label>
+                                {{ form.closing_time }}
+                            </div>
+
+                            <!-- Description and Image -->
+                            <div class="col-12">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                                {{ form.description }}
+                            </div>
+                            <div class="col-12">
+                                <label for="{{ form.image.id_for_label }}" class="form-label">Image</label>
+                                {{ form.image }}
+                                {% if form.instance.image %}
+                                <div class="mt-2">
+                                    <img src="{{ form.instance.image.url }}" alt="Current image" class="img-thumbnail" style="max-height: 200px;">
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Restaurant
+                            </button>
+                            <a href="{% url 'restaurant_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

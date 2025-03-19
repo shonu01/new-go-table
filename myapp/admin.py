@@ -5,58 +5,88 @@ from .models import CustomUser, Restaurant, Table, Booking
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'phone_number', 'is_customer', 'is_restaurant_admin', 'is_staff')
-    list_filter = ('is_customer', 'is_restaurant_admin', 'is_staff', 'is_superuser')
-    fieldsets = UserAdmin.fieldsets + (
-        ('Additional Info', {'fields': ('phone_number', 'is_customer', 'is_restaurant_admin')}),
+    list_display = ('username', 'email', 'phone_number', 'is_staff', 'is_active')
+    list_filter = ('is_staff', 'is_active', 'is_customer', 'is_restaurant_admin')
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Personal info', {'fields': ('email', 'phone_number')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_customer', 'is_restaurant_admin', 'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        ('Additional Info', {'fields': ('phone_number', 'is_customer', 'is_restaurant_admin')}),
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'phone_number', 'password1', 'password2'),
+        }),
     )
+    search_fields = ('username', 'email', 'phone_number')
+    ordering = ('username',)
 
 @admin.register(Restaurant)
 class RestaurantAdmin(admin.ModelAdmin):
-    list_display = ('name', 'admin', 'phone_number', 'email', 'is_active', 'created_at')
-    list_filter = ('is_active', 'created_at')
-    search_fields = ('name', 'description', 'address')
+    list_display = ('name', 'address', 'cuisine_type', 'price_range', 'get_rating', 'is_active')
+    list_filter = ('is_active', 'cuisine_type', 'price_range')
+    search_fields = ('name', 'address', 'description')
     readonly_fields = ('created_at', 'updated_at')
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        return qs.filter(admin=request.user)
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'description', 'image', 'is_active')
+        }),
+        ('Contact Information', {
+            'fields': ('address', 'phone_number', 'email')
+        }),
+        ('Business Details', {
+            'fields': ('opening_time', 'closing_time', 'max_capacity', 'cuisine_type', 'price_range')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+
+    def get_rating(self, obj):
+        rating = obj.get_rating()
+        if rating:
+            return format_html(
+                '<span style="color: #ffc107;">★</span> {:.1f}',
+                rating
+            )
+        return 'No ratings'
+    get_rating.short_description = 'Rating'
 
 @admin.register(Table)
 class TableAdmin(admin.ModelAdmin):
-    list_display = ('table_number', 'restaurant', 'capacity', 'status', 'created_at')
-    list_filter = ('status', 'restaurant', 'created_at')
+    list_display = ('table_number', 'restaurant', 'capacity', 'status')
+    list_filter = ('status', 'restaurant', 'capacity')
     search_fields = ('table_number', 'restaurant__name')
     readonly_fields = ('created_at', 'updated_at')
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        return qs.filter(restaurant__admin=request.user)
+    fieldsets = (
+        ('Table Information', {
+            'fields': ('restaurant', 'table_number', 'capacity', 'status')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'restaurant_name', 'table_number', 'date', 'time', 'status', 'created_at')
-    list_filter = ('status', 'date', 'time', 'created_at')
-    search_fields = ('user__username', 'table__restaurant__name', 'table__table_number')
+    list_display = ('get_restaurant', 'user', 'date', 'time', 'number_of_guests', 'status')
+    list_filter = ('status', 'date', 'time')
+    search_fields = ('user__username', 'user__email', 'table__restaurant__name')
     readonly_fields = ('created_at', 'updated_at')
-    
-    def restaurant_name(self, obj):
+    fieldsets = (
+        ('Booking Information', {
+            'fields': ('user', 'table', 'date', 'time', 'number_of_guests', 'status', 'special_requests')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+
+    def get_restaurant(self, obj):
         return obj.table.restaurant.name
-    restaurant_name.short_description = 'Restaurant'
-    
-    def table_number(self, obj):
-        return obj.table.table_number
-    table_number.short_description = 'Table'
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        return qs.filter(table__restaurant__admin=request.user)
+    get_restaurant.short_description = 'Restaurant'
+    get_restaurant.admin_order_field = 'table__restaurant__name'

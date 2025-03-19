@@ -4,95 +4,120 @@
 {% block title %}Restaurants - GoTable{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Search and Filter Section -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <form class="d-flex gap-2" method="get">
-                <input type="text" name="search" class="form-control" placeholder="Search restaurants..." value="{{ request.GET.search }}">
-                <button type="submit" class="btn btn-primary">Search</button>
-            </form>
-        </div>
-        <div class="col-md-4">
-            <select class="form-select" name="sort" onchange="this.form.submit()">
-                <option value="">Sort by...</option>
-                <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
-                <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
-            </select>
-        </div>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Restaurants</h1>
+        {% if user.is_admin %}
+        <a href="{% url 'restaurant_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add Restaurant
+        </a>
+        {% endif %}
     </div>
 
-    <!-- Results Count -->
-    <div class="mb-4">
-        <h2>Restaurants {% if request.GET.search %}matching "{{ request.GET.search }}"{% endif %}</h2>
-        <p class="text-muted">{{ restaurants.count }} results found</p>
+    <!-- Search and Filter Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Search restaurants..." value="{{ request.GET.search }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="cuisine" class="form-select">
+                        <option value="">All Cuisines</option>
+                        {% for cuisine in cuisine_types %}
+                        <option value="{{ cuisine }}" {% if request.GET.cuisine == cuisine %}selected{% endif %}>
+                            {{ cuisine }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="price" class="form-select">
+                        <option value="">All Price Ranges</option>
+                        <option value="$" {% if request.GET.price == '$' %}selected{% endif %}>Budget</option>
+                        <option value="$$" {% if request.GET.price == '$$' %}selected{% endif %}>Moderate</option>
+                        <option value="$$$" {% if request.GET.price == '$$$' %}selected{% endif %}>Expensive</option>
+                        <option value="$$$$" {% if request.GET.price == '$$$$' %}selected{% endif %}>Luxury</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Restaurant Grid -->
-    <div class="row g-4">
+    <div class="row">
         {% for restaurant in restaurants %}
-        <div class="col-md-6 col-lg-4">
-            <div class="card restaurant-card h-100">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
                 {% if restaurant.image %}
                 <img src="{{ restaurant.image.url }}" class="card-img-top" alt="{{ restaurant.name }}">
-                {% else %}
-                <img src="{% static 'images/default-restaurant.jpg' %}" class="card-img-top" alt="{{ restaurant.name }}">
                 {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{ restaurant.name }}</h5>
-                    <p class="card-text text-muted">
-                        <i class="fas fa-map-marker-alt me-2"></i>{{ restaurant.address }}
-                    </p>
                     <p class="card-text">{{ restaurant.description|truncatewords:20 }}</p>
-                    
-                    <!-- Restaurant Details -->
-                    <div class="mb-3">
-                        <p class="mb-1">
-                            <i class="fas fa-phone me-2"></i>{{ restaurant.phone_number }}
-                        </p>
-                        <p class="mb-1">
-                            <i class="fas fa-envelope me-2"></i>{{ restaurant.email }}
-                        </p>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-primary">{{ restaurant.cuisine_type }}</span>
+                        <span class="text-muted">{{ restaurant.price_range }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            {{ restaurant.opening_time|time:"g:i A" }} - {{ restaurant.closing_time|time:"g:i A" }}
+                        </small>
+                        <span class="badge bg-{{ restaurant.is_active|yesno:'success,danger' }}">
+                            {{ restaurant.is_active|yesno:'Open,Closed' }}
+                        </span>
                     </div>
                 </div>
-                <div class="card-footer bg-transparent border-top-0">
-                    <div class="d-grid">
-                        <a href="{% url 'restaurant_detail' restaurant.id %}" class="btn btn-outline-primary">
-                            View Details & Book
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'restaurant_detail' restaurant.pk %}" class="btn btn-primary">
+                            View Details
                         </a>
+                        {% if user.is_admin %}
+                        <div class="btn-group">
+                            <a href="{% url 'restaurant_edit' restaurant.pk %}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'restaurant_delete' restaurant.pk %}" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
         {% empty %}
-        <div class="col-12 text-center py-5">
-            <i class="fas fa-search fa-3x text-muted mb-3"></i>
-            <h3>No restaurants found</h3>
-            {% if request.GET.search %}
-            <p>No restaurants match your search criteria. Try different keywords or browse all restaurants.</p>
-            <a href="{% url 'restaurant_list' %}" class="btn btn-primary">View All Restaurants</a>
-            {% else %}
-            <p>There are no restaurants available at the moment.</p>
-            {% endif %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                No restaurants found matching your criteria.
+            </div>
         </div>
         {% endfor %}
     </div>
 
     <!-- Pagination -->
     {% if restaurants.has_other_pages %}
-    <nav class="mt-4" aria-label="Restaurant pagination">
+    <nav aria-label="Page navigation" class="mt-4">
         <ul class="pagination justify-content-center">
             {% if restaurants.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ restaurants.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
+                <a class="page-link" href="?page={{ restaurants.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.cuisine %}&cuisine={{ request.GET.cuisine }}{% endif %}{% if request.GET.price %}&price={{ request.GET.price }}{% endif %}">
+                    Previous
                 </a>
             </li>
             {% endif %}
 
             {% for num in restaurants.paginator.page_range %}
             <li class="page-item {% if restaurants.number == num %}active{% endif %}">
-                <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.cuisine %}&cuisine={{ request.GET.cuisine }}{% endif %}{% if request.GET.price %}&price={{ request.GET.price }}{% endif %}">
                     {{ num }}
                 </a>
             </li>
@@ -100,8 +125,8 @@
 
             {% if restaurants.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ restaurants.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
+                <a class="page-link" href="?page={{ restaurants.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.cuisine %}&cuisine={{ request.GET.cuisine }}{% endif %}{% if request.GET.price %}&price={{ request.GET.price }}{% endif %}">
+                    Next
                 </a>
             </li>
             {% endif %}
