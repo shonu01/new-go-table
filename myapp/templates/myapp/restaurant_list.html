@@ -1,0 +1,112 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Restaurants - GoTable{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <form class="d-flex gap-2" method="get">
+                <input type="text" name="search" class="form-control" placeholder="Search restaurants..." value="{{ request.GET.search }}">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" name="sort" onchange="this.form.submit()">
+                <option value="">Sort by...</option>
+                <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="mb-4">
+        <h2>Restaurants {% if request.GET.search %}matching "{{ request.GET.search }}"{% endif %}</h2>
+        <p class="text-muted">{{ restaurants.count }} results found</p>
+    </div>
+
+    <!-- Restaurant Grid -->
+    <div class="row g-4">
+        {% for restaurant in restaurants %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card restaurant-card h-100">
+                {% if restaurant.image %}
+                <img src="{{ restaurant.image.url }}" class="card-img-top" alt="{{ restaurant.name }}">
+                {% else %}
+                <img src="{% static 'images/default-restaurant.jpg' %}" class="card-img-top" alt="{{ restaurant.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ restaurant.name }}</h5>
+                    <p class="card-text text-muted">
+                        <i class="fas fa-map-marker-alt me-2"></i>{{ restaurant.address }}
+                    </p>
+                    <p class="card-text">{{ restaurant.description|truncatewords:20 }}</p>
+                    
+                    <!-- Restaurant Details -->
+                    <div class="mb-3">
+                        <p class="mb-1">
+                            <i class="fas fa-phone me-2"></i>{{ restaurant.phone_number }}
+                        </p>
+                        <p class="mb-1">
+                            <i class="fas fa-envelope me-2"></i>{{ restaurant.email }}
+                        </p>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <div class="d-grid">
+                        <a href="{% url 'restaurant_detail' restaurant.id %}" class="btn btn-outline-primary">
+                            View Details & Book
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h3>No restaurants found</h3>
+            {% if request.GET.search %}
+            <p>No restaurants match your search criteria. Try different keywords or browse all restaurants.</p>
+            <a href="{% url 'restaurant_list' %}" class="btn btn-primary">View All Restaurants</a>
+            {% else %}
+            <p>There are no restaurants available at the moment.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if restaurants.has_other_pages %}
+    <nav class="mt-4" aria-label="Restaurant pagination">
+        <ul class="pagination justify-content-center">
+            {% if restaurants.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ restaurants.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in restaurants.paginator.page_range %}
+            <li class="page-item {% if restaurants.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                    {{ num }}
+                </a>
+            </li>
+            {% endfor %}
+
+            {% if restaurants.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ restaurants.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %} 

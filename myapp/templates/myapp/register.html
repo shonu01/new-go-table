@@ -1,0 +1,200 @@
+{% extends 'myapp/base.html' %}
+
+{% block title %}Register - GoTable{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                        <h2 class="h4">Create Your Account</h2>
+                        <p class="text-muted">Join GoTable to start booking restaurant tables</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Please correct the errors below.
+                        </div>
+                        {% endif %}
+
+                        {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+
+                        <!-- Personal Information -->
+                        <h5 class="mb-3">Personal Information</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="username" class="form-label">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <input type="text" class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                                           id="username" name="username" required 
+                                           value="{{ form.username.value|default:'' }}">
+                                    {% if form.username.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.username.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-envelope"></i>
+                                    </span>
+                                    <input type="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" 
+                                           id="email" name="email" required 
+                                           value="{{ form.email.value|default:'' }}">
+                                    {% if form.email.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.email.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="phone_number" class="form-label">Phone Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-phone"></i>
+                                    </span>
+                                    <input type="tel" class="form-control {% if form.phone_number.errors %}is-invalid{% endif %}" 
+                                           id="phone_number" name="phone_number" 
+                                           value="{{ form.phone_number.value|default:'' }}">
+                                    {% if form.phone_number.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.phone_number.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="account_type" class="form-label">Account Type</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-users"></i>
+                                    </span>
+                                    <select class="form-select" id="account_type" name="account_type" required>
+                                        <option value="customer" {% if form.account_type.value == 'customer' %}selected{% endif %}>Customer</option>
+                                        <option value="restaurant_admin" {% if form.account_type.value == 'restaurant_admin' %}selected{% endif %}>Restaurant Admin</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Password Section -->
+                        <h5 class="mb-3">Set Password</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="password1" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input type="password" class="form-control {% if form.password1.errors %}is-invalid{% endif %}" 
+                                           id="password1" name="password1" required>
+                                    {% if form.password1.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.password1.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="password2" class="form-label">Confirm Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input type="password" class="form-control {% if form.password2.errors %}is-invalid{% endif %}" 
+                                           id="password2" name="password2" required>
+                                    {% if form.password2.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.password2.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                            </label>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="mb-2">Already have an account?</p>
+                        <a href="{% url 'login' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Acceptance of Terms</h6>
+                <p>By accessing and using GoTable, you agree to be bound by these Terms and Conditions.</p>
+
+                <h6>2. User Registration</h6>
+                <p>Users must provide accurate and complete information during registration.</p>
+
+                <h6>3. Booking Policy</h6>
+                <p>Users are responsible for honoring their bookings and must cancel at least 2 hours in advance.</p>
+
+                <h6>4. Privacy Policy</h6>
+                <p>We respect your privacy and protect your personal information according to our Privacy Policy.</p>
+
+                <h6>5. Modifications</h6>
+                <p>We reserve the right to modify these terms at any time. Users will be notified of significant changes.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

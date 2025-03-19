@@ -1,0 +1,134 @@
+/* General Styles */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../images/hero-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 100px 0;
+}
+
+/* Restaurant Cards */
+.restaurant-card {
+    transition: transform 0.3s ease;
+    height: 100%;
+}
+
+.restaurant-card:hover {
+    transform: translateY(-5px);
+}
+
+.restaurant-card img {
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Table Availability */
+.table-slot {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.table-slot:hover {
+    background-color: #f8f9fa;
+}
+
+.table-slot.available {
+    background-color: #d4edda;
+}
+
+.table-slot.unavailable {
+    background-color: #f8d7da;
+    cursor: not-allowed;
+}
+
+/* Forms */
+.form-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Booking Status Tags */
+.status-tag {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.status-pending {
+    background-color: #ffeeba;
+    color: #856404;
+}
+
+.status-confirmed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-cancelled {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-completed {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+/* Navigation Active State */
+.nav-link.active {
+    font-weight: bold;
+}
+
+/* Search Form */
+.search-form {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+/* Restaurant Details */
+.restaurant-header {
+    position: relative;
+    padding: 100px 0;
+    background-size: cover;
+    background-position: center;
+}
+
+.restaurant-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.restaurant-header-content {
+    position: relative;
+    z-index: 1;
+    color: white;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .hero {
+        padding: 50px 0;
+    }
+    
+    .restaurant-card img {
+        height: 150px;
+    }
+} 
